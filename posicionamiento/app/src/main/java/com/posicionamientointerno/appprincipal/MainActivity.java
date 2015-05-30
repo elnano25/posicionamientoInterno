@@ -8,16 +8,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+import com.posicionamientointerno.appprincipal.externalsystem.ExternalSystemLoginUser;
+import com.posicionamientointerno.appprincipal.util.Utility;
 
 
 public class MainActivity extends ActionBarActivity {
 
     public static final String LOGIN_PREFERENCES = "lOGIN";
+    public static final String LOGIN_PREFERENCES_USER_FIELD = "USER";
+    public static final String LOGIN_PREFERENCES_USER_PASSWORD = "PASSWORD";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SharedPreferences sp1=this.getSharedPreferences(LOGIN_PREFERENCES,1);
-        String user=sp1.getString("User", null);
+        String user=sp1.getString(LOGIN_PREFERENCES_USER_FIELD, null);
         setContentView(R.layout.activity_main);
         if (user!=null){
             Intent intent = new Intent(this, MainActivityUser.class);
@@ -30,22 +39,30 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     public void onClick_Login(View v) {
-        //call web services
+
+
         EditText username = (EditText) findViewById(R.id.username);
         EditText password = (EditText) findViewById(R.id.password);
-        SharedPreferences sp=getSharedPreferences(LOGIN_PREFERENCES, 1);
-        SharedPreferences.Editor Ed=sp.edit();
-        Ed.putString("Unm",username.getText().toString() );
-        Ed.putString("Psw",password.getText().toString());
-        Ed.commit();
-        Intent intent = new Intent(this, MainActivityUser.class);
-        startActivity(intent);
+        RequestParams params = new RequestParams();
+        //call web services
+        if(Utility.validate(username.getText().toString())){
+            params.put("UserName", username.getText().toString());
+            params.put("Password", password);
+            ExternalSystemLoginUser externalSystem = new ExternalSystemLoginUser();
+            externalSystem.logInExternalSystem(params);
+            SharedPreferences sp = getSharedPreferences(LOGIN_PREFERENCES, 1);
+            SharedPreferences.Editor Ed = sp.edit();
+            Ed.putString(LOGIN_PREFERENCES_USER_FIELD, username.getText().toString());
+            Ed.putString(LOGIN_PREFERENCES_USER_PASSWORD, password.getText().toString());
+            Ed.commit();
+            Intent intent = new Intent(this, MainActivityUser.class);
+            startActivity(intent);
+        }
     }
 
     @Override
