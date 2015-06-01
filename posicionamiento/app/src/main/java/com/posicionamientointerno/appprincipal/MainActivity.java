@@ -14,13 +14,15 @@ import com.loopj.android.http.RequestParams;
 import com.posicionamientointerno.appprincipal.externalsystem.ExternalSystemLoginUser;
 import com.posicionamientointerno.appprincipal.util.Utility;
 
+import org.json.JSONObject;
+
 
 public class MainActivity extends ActionBarActivity {
 
     public static final String LOGIN_PREFERENCES = "lOGIN";
     public static final String LOGIN_PREFERENCES_USER_FIELD = "USER";
     public static final String LOGIN_PREFERENCES_USER_PASSWORD = "PASSWORD";
-
+    public static final String LOGIN_PREFERENCES_USER_TOKEN= "TOKEN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +30,10 @@ public class MainActivity extends ActionBarActivity {
         SharedPreferences sp1=this.getSharedPreferences(LOGIN_PREFERENCES,1);
         String user=sp1.getString(LOGIN_PREFERENCES_USER_FIELD, null);
         setContentView(R.layout.activity_main);
-        if (user!=null){
+       /* if (user!=null){
             Intent intent = new Intent(this, MainActivityUser.class);
             startActivity(intent);
-        }
+        }*/
 
 
     }
@@ -48,20 +50,26 @@ public class MainActivity extends ActionBarActivity {
 
         EditText username = (EditText) findViewById(R.id.username);
         EditText password = (EditText) findViewById(R.id.password);
-        RequestParams params = new RequestParams();
-        //call web services
-        if(Utility.validate(username.getText().toString())){
-            params.put("UserName", username.getText().toString());
-            params.put("Password", password);
-            ExternalSystemLoginUser externalSystem = new ExternalSystemLoginUser();
-            externalSystem.logInExternalSystem(params);
-            SharedPreferences sp = getSharedPreferences(LOGIN_PREFERENCES, 1);
-            SharedPreferences.Editor Ed = sp.edit();
-            Ed.putString(LOGIN_PREFERENCES_USER_FIELD, username.getText().toString());
-            Ed.putString(LOGIN_PREFERENCES_USER_PASSWORD, password.getText().toString());
-            Ed.commit();
-            Intent intent = new Intent(this, MainActivityUser.class);
-            startActivity(intent);
+        JSONObject jsonParams =new JSONObject();
+
+        if(Utility.isNotNull(username.getText().toString())){
+            try {
+                jsonParams.put("UserName", username.getText().toString());
+                jsonParams.put("Password", password.getText().toString());
+                ExternalSystemLoginUser externalSystem = new ExternalSystemLoginUser(this);
+                externalSystem.logInExternalSystem(jsonParams);
+                SharedPreferences sp = getSharedPreferences(LOGIN_PREFERENCES, 1);
+                SharedPreferences.Editor Ed = sp.edit();
+                Ed.putString(LOGIN_PREFERENCES_USER_FIELD, username.getText().toString());
+                Ed.putString(LOGIN_PREFERENCES_USER_PASSWORD, password.getText().toString());
+                Ed.commit();
+                Intent intent = new Intent(this, MainActivityUser.class);
+                startActivity(intent);
+
+            }
+            catch (Exception e){
+
+            }
         }
     }
 
